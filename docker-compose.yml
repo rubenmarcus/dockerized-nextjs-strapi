@@ -1,0 +1,56 @@
+version: "3"
+
+services:
+  strapiexample:
+    image: strapi/strapi
+    container_name: strapiexample
+    restart: unless-stopped
+    env_file: - ./cms/.env
+    environment:
+      DATABASE_CLIENT: ${DATABASE_CLIENT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+    #    links:
+    #      - mongo:mongo
+    networks:
+      - strapi-app-network
+    volumes:
+      - ./cms/app:/srv/app
+    ports:
+      - "1337:1337"
+
+  mongoexample:
+    image: mongo
+    container_name: mongoexample
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    networks:
+      - strapi-app-network
+    volumes:
+      - strapidata:/data/db
+    ports:
+      - "27017:27017"
+
+networks:
+  strapi-app-network:
+    driver: bridge
+
+volumes:
+  strapidata:
+
+ frontend:
+    image: node:10
+    ports:
+      - 3000:3000
+    volumes:
+      - ./frontend:/usr/local/app
+    restart: always
+    working_dir: /usr/local/app
+    entrypoint: "/bin/bash"
+    command: "-c \"if [ ! -d \"node_modules\" ]; then npm i; fi; npm run dev\""
